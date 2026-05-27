@@ -28,11 +28,6 @@ jobs:
           cache: "pip"
           cache-dependency-path: requirements.txt
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
       - name: Select stock list
         id: stocks
         env:
@@ -41,13 +36,18 @@ jobs:
         run: |
           if [ "${{ matrix.group }}" = "1" ]; then
             codes="$LIST_1"
+            list_name="STOCK_LIST"
           else
             codes="$LIST_2"
+            list_name="STOCK_LIST_2"
           fi
 
           if [ -z "$codes" ]; then
+            echo "::warning::$list_name is empty. Skip this group."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
+            count=$(echo "$codes" | tr ',' '\n' | grep -v '^[[:space:]]*$' | wc -l)
+            echo "$list_name loaded. Stock count: $count"
             echo "skip=false" >> "$GITHUB_OUTPUT"
             echo "codes=$codes" >> "$GITHUB_OUTPUT"
           fi
